@@ -32,8 +32,10 @@ jobs:
           cd dist
           zip -r QuadrantNote_Mac.zip QuadrantNote.app
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4  # 关键修改：必须是 v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: My-Mac-App-Result
-          path: dist/QuadrantNote_Mac.zip
+          files: dist/QuadrantNote_Mac.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
