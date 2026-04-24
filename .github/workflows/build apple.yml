@@ -1,19 +1,22 @@
-name: Build Mac App Bundle
+name: Build and Release Mac App
 
 on: 
   push:
-    branches: [ main ] 
+    branches: [ main ]  # 每次你推送到 main 分支时触发
+
+permissions:
+  contents: write  # 必须开启写入权限，否则无法创建 Release
 
 jobs:
   build-macos:
-    runs-on: macos-latest  
+    runs-on: macos-latest
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # 升级到 v4
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # 升级到 v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -24,18 +27,21 @@ jobs:
 
       - name: Run PyInstaller
         run: |
-          # 请确保 your_script.py 替换为你仓库里真实的 py 文件名
-          pyinstaller --noconsole --windowed --onefile --name "QuadrantNote" main.py
+          # 请确保 your_script.py 替换为你仓库里真正的文件名
+          pyinstaller --noconsole --windowed --onefile --name "QuadrantNote" your_script.py
 
       - name: Compress App
         run: |
           cd dist
           zip -r QuadrantNote_Mac.zip QuadrantNote.app
 
-      - name: Upload Artifact
-        if: success()
-        uses: actions/upload-artifact@v4
+      - name: Create Release and Upload
+        uses: softprops/action-gh-release@v1
         with:
-          name: My-Mac-App-Result
-          # 这里改用通配符，只要是 dist 文件夹里的 zip 全都传上来
-          path: dist/*.zip
+          tag_name: v${{ github.run_number }}  # 自动根据运行次数生成版本号，如 v1, v2
+          name: Release v${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: dist/QuadrantNote_Mac.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub 自动生成的 Token，无需手动设置
