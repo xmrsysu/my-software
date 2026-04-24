@@ -32,10 +32,10 @@ jobs:
           cd dist
           zip -r QuadrantNote_Mac.zip QuadrantNote.app
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
-          files: dist/QuadrantNote_Mac.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: My-Mac-App-Result
+          # 这里改用通配符，只要是 dist 文件夹里的 zip 全都传上来
+          path: dist/*.zip
